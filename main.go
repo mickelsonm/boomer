@@ -1,43 +1,48 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/ninnemana/boomer/api"
 	"golang.org/x/net/http2"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
+)
+
+const (
+	HEADER = `
+    _------_
+   /        \
+  |          |
+  |          |
+  |     __  __)
+  |    /  \/  \
+ /\/\ (o   )o  )
+ /c    \__/ --.    ______________
+ \_   _-------'   /              \\
+ |  /         \ <   HEY BOOMER!!! \\
+ | | '\_______)   \_______________\\
+ |  \_____)
+ |_____ |
+|_____/\/\
+/        \
+	`
 )
 
 func main() {
 	router := httprouter.New()
 
-	router.GET("/", api.UserInterface)
-	router.POST("/bench", api.Boomer)
+	router.GET("/", api.Index)
+	router.POST("/bench", api.Bench)
 
-	var srv http.Server
-	srv.Addr = ":8080"
-	srv.Handler = router
-
-	var header string
-	file, err := os.Open("header.txt")
-	if err != nil {
-		msg := ""
-		if err != nil {
-			msg = err.Error()
-		}
-		log.Printf("Failed to open the header file %s\n", msg)
-	} else if file != nil {
-		data, err := ioutil.ReadAll(file)
-		if err == nil {
-			header = string(data)
-		}
+	srv := http.Server{
+		Addr:    ":8080",
+		Handler: router,
 	}
 
 	http2.ConfigureServer(&srv, &http2.Server{})
 
-	log.Printf("%s\n", header)
+	log.Printf("%s\n", HEADER)
 	log.Printf("Starting server on %s\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
